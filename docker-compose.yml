@@ -1,0 +1,48 @@
+services:
+  eps_sanitas:
+    build: .
+    container_name: eps_sanitas_mock
+    environment:
+      EPS_NAME: "EPS Sanitas"
+      EPS_SLUG: "sanitas"
+      EPS_CODE: "EPS-SAN"
+      TIMEZONE: "America/Bogota"
+      PORT: 4011
+      API_KEY: "sanitas-key"
+      DB_PATH: "/data/eps.db"
+    ports:
+      - "4011:4011"
+    volumes:
+      - ./data/sanitas:/data
+
+  eps_nuevaeps:
+    build: .
+    container_name: eps_nuevaeps_mock
+    environment:
+      EPS_NAME: "Nueva EPS"
+      EPS_SLUG: "nuevaeps"
+      EPS_CODE: "EPS-NUE"
+      TIMEZONE: "America/Bogota"
+      PORT: 4012
+      API_KEY: "nuevaeps-key"
+      DB_PATH: "/data/eps.db"
+    ports:
+      - "4012:4012"
+    volumes:
+      - ./data/nuevaeps:/data
+
+  eps_saludtotal:
+    build: .
+    container_name: eps_saludtotal_mock
+    environment:
+      EPS_NAME: "Salud Total"
+      EPS_SLUG: "saludtotal"
+      EPS_CODE: "EPS-SLT"
+      TIMEZONE: "America/Bogota"
+      PORT: 4013
+      API_KEY: "saludtotal-key"
+      DB_PATH: "/data/eps.db"
+    ports:
+      - "4013:4013"
+    volumes:
+      - ./data/saludtotal:/data
