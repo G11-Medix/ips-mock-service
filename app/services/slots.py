@@ -47,7 +47,7 @@ def blocked_slots(provider_id: int, target_date: date) -> set[datetime]:
     if not slots:
         return set()
 
-    seed_value = f"{settings.eps_slug}:{provider_id}:{target_date.isoformat()}".encode("utf-8")
+    seed_value = f"{settings.ips_slug}:{provider_id}:{target_date.isoformat()}".encode("utf-8")
     seed_hash = hashlib.sha256(seed_value).hexdigest()
     rnd = random.Random(seed_hash)
 

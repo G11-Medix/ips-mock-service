@@ -14,7 +14,6 @@ class PacienteRead(BaseModel):
     correo: str | None
     estado: str
     fecha_creacion: datetime
-    id_institucion: int
 
 
 class PacienteSummary(BaseModel):

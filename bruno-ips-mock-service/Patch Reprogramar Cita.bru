@@ -1,0 +1,17 @@
+meta {
+  name: Patch Reprogramar Cita
+  type: http
+  seq: 11
+}
+
+patch {
+  url: {{API_URL}}/citas/{{ID_CITA}}/reprogramar
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "nueva_fecha_hora_cupo": "{{FECHA_HORA_REPROGRAMACION}}"
+  }
+}

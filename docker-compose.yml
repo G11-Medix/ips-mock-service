@@ -1,48 +1,54 @@
 services:
-  eps_sanitas:
+  ips_clinica_santa_helena:
     build: .
-    container_name: eps_sanitas_mock
+    container_name: ips_clinica_santa_helena_mock
     environment:
-      EPS_NAME: "EPS Sanitas"
-      EPS_SLUG: "sanitas"
-      EPS_CODE: "EPS-SAN"
+      IPS_NAME: "Clinica Santa Helena"
+      IPS_SLUG: "clinica-santa-helena"
+      IPS_CODE: "IPS-CSH"
+      IPS_NIT: "901110100-1"
       TIMEZONE: "America/Bogota"
       PORT: 4011
-      API_KEY: "sanitas-key"
-      DB_PATH: "/data/eps.db"
+      API_KEY: "ips-csh-key"
+      DB_PATH: "/data/ips.db"
+      RESET_DB_ON_STARTUP: "true"
     ports:
       - "4011:4011"
     volumes:
-      - ./data/sanitas:/data
+      - ./data/ips-csh:/data
 
-  eps_nuevaeps:
+  ips_hospital_nuevo_horizonte:
     build: .
-    container_name: eps_nuevaeps_mock
+    container_name: ips_hospital_nuevo_horizonte_mock
     environment:
-      EPS_NAME: "Nueva EPS"
-      EPS_SLUG: "nuevaeps"
-      EPS_CODE: "EPS-NUE"
+      IPS_NAME: "Hospital Nuevo Horizonte"
+      IPS_SLUG: "hospital-nuevo-horizonte"
+      IPS_CODE: "IPS-HNH"
+      IPS_NIT: "901220200-1"
       TIMEZONE: "America/Bogota"
       PORT: 4012
-      API_KEY: "nuevaeps-key"
-      DB_PATH: "/data/eps.db"
+      API_KEY: "ips-hnh-key"
+      DB_PATH: "/data/ips.db"
+      RESET_DB_ON_STARTUP: "true"
     ports:
       - "4012:4012"
     volumes:
-      - ./data/nuevaeps:/data
+      - ./data/ips-hnh:/data
 
-  eps_saludtotal:
+  ips_clinica_prado_caribe:
     build: .
-    container_name: eps_saludtotal_mock
+    container_name: ips_clinica_prado_caribe_mock
     environment:
-      EPS_NAME: "Salud Total"
-      EPS_SLUG: "saludtotal"
-      EPS_CODE: "EPS-SLT"
+      IPS_NAME: "Clinica del Prado Caribe"
+      IPS_SLUG: "clinica-prado-caribe"
+      IPS_CODE: "IPS-CPC"
+      IPS_NIT: "901330300-1"
       TIMEZONE: "America/Bogota"
       PORT: 4013
-      API_KEY: "saludtotal-key"
-      DB_PATH: "/data/eps.db"
+      API_KEY: "ips-cpc-key"
+      DB_PATH: "/data/ips.db"
+      RESET_DB_ON_STARTUP: "true"
     ports:
       - "4013:4013"
     volumes:
-      - ./data/saludtotal:/data
+      - ./data/ips-cpc:/data

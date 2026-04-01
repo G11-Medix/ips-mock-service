@@ -1,0 +1,11 @@
+meta {
+  name: Get Cupos Prestador
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{API_URL}}/prestadores/{{ID_PRESTADOR}}/cupos?fecha={{FECHA_CUPOS}}
+  body: none
+  auth: none
+}

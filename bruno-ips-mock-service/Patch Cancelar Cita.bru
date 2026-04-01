@@ -1,0 +1,17 @@
+meta {
+  name: Patch Cancelar Cita
+  type: http
+  seq: 12
+}
+
+patch {
+  url: {{API_URL}}/citas/{{ID_CITA}}/cancelar
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "motivo": "Cancelacion solicitada por el paciente"
+  }
+}

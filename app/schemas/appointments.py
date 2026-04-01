@@ -3,27 +3,27 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 
-class AppointmentCreate(BaseModel):
-    patient_id: int
-    provider_id: int
-    slot_start: datetime
+class CitaCrear(BaseModel):
+    id_paciente: int
+    id_prestador: int
+    fecha_hora_cupo: datetime
 
 
-class AppointmentRead(BaseModel):
+class CitaRead(BaseModel):
     id: int
-    patient_id: int
-    provider_id: int
-    specialty_id: int
-    slot_start: datetime
-    status: str
-    cancel_reason: str | None
-    created_at: datetime
-    updated_at: datetime
+    id_paciente: int
+    id_prestador: int
+    id_especialidad: int
+    fecha_hora_cupo: datetime
+    estado: str
+    motivo_cancelacion: str | None
+    fecha_creacion: datetime
+    fecha_actualizacion: datetime
 
 
-class AppointmentCancel(BaseModel):
-    reason: str | None = Field(default=None, max_length=200)
+class CitaCancelar(BaseModel):
+    motivo: str | None = Field(default=None, max_length=200)
 
 
-class AppointmentReschedule(BaseModel):
-    new_slot_start: datetime
+class CitaReprogramar(BaseModel):
+    nueva_fecha_hora_cupo: datetime

@@ -3,19 +3,19 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class SpecialtyRead(BaseModel):
+class EspecialidadRead(BaseModel):
     id: int
-    name: str
+    nombre: str
 
 
-class ProviderRead(BaseModel):
+class PrestadorRead(BaseModel):
     id: int
-    full_name: str
-    specialty_id: int
+    nombre_completo: str
+    id_especialidad: int
 
 
-class SlotRead(BaseModel):
-    provider_id: int
-    slot_start: datetime
-    available: bool
-    blocked: bool
+class CupoRead(BaseModel):
+    id_prestador: int
+    fecha_hora: datetime
+    disponible: bool
+    bloqueado: bool

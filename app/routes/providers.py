@@ -5,39 +5,48 @@ from sqlmodel import Session, select
 
 from app.db.session import get_session
 from app.models.entities import Appointment, Provider, Specialty
-from app.schemas.providers import ProviderRead, SlotRead, SpecialtyRead
+from app.schemas.providers import CupoRead, EspecialidadRead, PrestadorRead
 from app.services.slots import blocked_slots, build_daily_slots
 
-router = APIRouter(prefix="/api/v1", tags=["providers"])
+router = APIRouter(prefix="/api/v1", tags=["prestadores"])
 
 
-@router.get("/specialties", response_model=list[SpecialtyRead])
-def list_specialties(session: Session = Depends(get_session)) -> list[Specialty]:
-    return session.exec(select(Specialty).order_by(Specialty.name)).all()
+@router.get("/especialidades", response_model=list[EspecialidadRead])
+def list_specialties(session: Session = Depends(get_session)) -> list[EspecialidadRead]:
+    specialties = session.exec(select(Specialty).order_by(Specialty.name)).all()
+    return [EspecialidadRead(id=row.id, nombre=row.name) for row in specialties]
 
 
-@router.get("/providers", response_model=list[ProviderRead])
+@router.get("/prestadores", response_model=list[PrestadorRead])
 def list_providers(
-    specialty_id: int | None = Query(default=None),
+    id_especialidad: int | None = Query(default=None),
     session: Session = Depends(get_session),
-) -> list[Provider]:
+) -> list[PrestadorRead]:
     query = select(Provider)
-    if specialty_id is not None:
-        query = query.where(Provider.specialty_id == specialty_id)
-    return session.exec(query.order_by(Provider.id)).all()
+    if id_especialidad is not None:
+        query = query.where(Provider.specialty_id == id_especialidad)
+    providers = session.exec(query.order_by(Provider.id)).all()
+    return [
+        PrestadorRead(id=row.id, nombre_completo=row.full_name, id_especialidad=row.specialty_id)
+        for row in providers
+    ]
 
 
-@router.get("/providers/{provider_id}/slots", response_model=list[SlotRead])
-def provider_slots(provider_id: int, date: date, session: Session = Depends(get_session)) -> list[SlotRead]:
-    provider = session.get(Provider, provider_id)
+@router.get("/prestadores/{id_prestador}/cupos", response_model=list[CupoRead])
+def provider_slots(
+    id_prestador: int,
+    fecha: date,
+    session: Session = Depends(get_session),
+) -> list[CupoRead]:
+    provider = session.get(Provider, id_prestador)
     if provider is None:
-        raise HTTPException(status_code=404, detail="Provider not found")
+        raise HTTPException(status_code=404, detail="Prestador no encontrado")
 
-    slots = build_daily_slots(provider_id, date)
-    blocked = blocked_slots(provider_id, date)
+    slots = build_daily_slots(id_prestador, fecha)
+    blocked = blocked_slots(id_prestador, fecha)
     booked_rows = session.exec(
         select(Appointment).where(
-            Appointment.provider_id == provider_id,
+            Appointment.provider_id == id_prestador,
             Appointment.slot_start.in_(slots),
             Appointment.status == "scheduled",
         )
@@ -45,11 +54,11 @@ def provider_slots(provider_id: int, date: date, session: Session = Depends(get_
     booked = {row.slot_start for row in booked_rows}
 
     return [
-        SlotRead(
-            provider_id=provider_id,
-            slot_start=slot,
-            blocked=slot in blocked,
-            available=(slot not in blocked and slot not in booked),
+        CupoRead(
+            id_prestador=id_prestador,
+            fecha_hora=slot,
+            bloqueado=slot in blocked,
+            disponible=(slot not in blocked and slot not in booked),
         )
         for slot in slots
     ]

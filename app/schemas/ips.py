@@ -1,9 +1,10 @@
 from pydantic import BaseModel
 
 
-class InstitucionRead(BaseModel):
-    id_institucion: int
+class IPSActualRead(BaseModel):
+    id_ips: int
     nombre: str
+    codigo: str | None
     nit: str
     direccion: str | None
     telefono: str | None

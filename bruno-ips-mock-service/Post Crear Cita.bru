@@ -1,0 +1,19 @@
+meta {
+  name: Post Crear Cita
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{API_URL}}/citas
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "id_paciente": {{ID_PACIENTE}},
+    "id_prestador": {{ID_PRESTADOR}},
+    "fecha_hora_cupo": "{{FECHA_HORA_CITA}}"
+  }
+}

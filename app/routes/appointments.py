@@ -6,10 +6,10 @@ from sqlmodel import Session
 from app.db.session import get_session
 from app.models.entities import Appointment
 from app.schemas.appointments import (
-    AppointmentCancel,
-    AppointmentCreate,
-    AppointmentRead,
-    AppointmentReschedule,
+    CitaCancelar,
+    CitaCrear,
+    CitaRead,
+    CitaReprogramar,
 )
 from app.services.appointments import (
     ensure_patient_exists,
@@ -18,87 +18,107 @@ from app.services.appointments import (
     validate_slot,
 )
 
-router = APIRouter(prefix="/api/v1/appointments", tags=["appointments"])
+router = APIRouter(prefix="/api/v1/citas", tags=["citas"])
 
 
-@router.post("", response_model=AppointmentRead, status_code=status.HTTP_201_CREATED)
-def create_appointment(payload: AppointmentCreate, session: Session = Depends(get_session)) -> Appointment:
-    ensure_patient_exists(session, payload.patient_id)
-    provider = ensure_provider_exists(session, payload.provider_id)
-    validate_slot(session, provider.id, payload.slot_start)
+def _to_cita_read(appointment: Appointment) -> CitaRead:
+    return CitaRead(
+        id=appointment.id,
+        id_paciente=appointment.patient_id,
+        id_prestador=appointment.provider_id,
+        id_especialidad=appointment.specialty_id,
+        fecha_hora_cupo=appointment.slot_start,
+        estado=appointment.status,
+        motivo_cancelacion=appointment.cancel_reason,
+        fecha_creacion=appointment.created_at,
+        fecha_actualizacion=appointment.updated_at,
+    )
+
+
+@router.post("", response_model=CitaRead, status_code=status.HTTP_201_CREATED)
+def create_appointment(payload: CitaCrear, session: Session = Depends(get_session)) -> CitaRead:
+    ensure_patient_exists(session, payload.id_paciente)
+    provider = ensure_provider_exists(session, payload.id_prestador)
+    validate_slot(session, provider.id, payload.fecha_hora_cupo)
 
     appointment = Appointment(
-        patient_id=payload.patient_id,
+        patient_id=payload.id_paciente,
         provider_id=provider.id,
         specialty_id=provider.specialty_id,
-        slot_start=payload.slot_start,
+        slot_start=payload.fecha_hora_cupo,
         status="scheduled",
     )
     session.add(appointment)
     session.commit()
     session.refresh(appointment)
-    return appointment
+    return _to_cita_read(appointment)
 
 
-@router.get("/{appointment_id}", response_model=AppointmentRead)
-def get_appointment(appointment_id: int, session: Session = Depends(get_session)) -> Appointment:
-    appointment = session.get(Appointment, appointment_id)
+@router.get("/{id_cita}", response_model=CitaRead)
+def get_appointment(id_cita: int, session: Session = Depends(get_session)) -> CitaRead:
+    appointment = session.get(Appointment, id_cita)
     if appointment is None:
-        raise HTTPException(status_code=404, detail="Appointment not found")
-    return appointment
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
+    return _to_cita_read(appointment)
 
 
-@router.get("", response_model=list[AppointmentRead])
+@router.get("", response_model=list[CitaRead])
 def get_appointments(
-    patient_id: int | None = Query(default=None),
-    from_date: datetime | None = Query(default=None, alias="from"),
-    to_date: datetime | None = Query(default=None, alias="to"),
+    id_paciente: int | None = Query(default=None),
+    desde: datetime | None = Query(default=None),
+    hasta: datetime | None = Query(default=None),
     session: Session = Depends(get_session),
-) -> list[Appointment]:
-    return list_appointments(session, patient_id=patient_id, from_date=from_date, to_date=to_date)
+) -> list[CitaRead]:
+    appointments = list_appointments(session, patient_id=id_paciente, from_date=desde, to_date=hasta)
+    return [_to_cita_read(row) for row in appointments]
 
 
-@router.patch("/{appointment_id}/cancel", response_model=AppointmentRead)
+@router.patch("/{id_cita}/cancelar", response_model=CitaRead)
 def cancel_appointment(
-    appointment_id: int,
-    payload: AppointmentCancel,
+    id_cita: int,
+    payload: CitaCancelar,
     session: Session = Depends(get_session),
-) -> Appointment:
-    appointment = session.get(Appointment, appointment_id)
+) -> CitaRead:
+    appointment = session.get(Appointment, id_cita)
     if appointment is None:
-        raise HTTPException(status_code=404, detail="Appointment not found")
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
 
     if appointment.status == "cancelled":
-        raise HTTPException(status_code=409, detail="Appointment already cancelled")
+        raise HTTPException(status_code=409, detail="La cita ya fue cancelada")
 
     appointment.status = "cancelled"
-    appointment.cancel_reason = payload.reason
+    appointment.cancel_reason = payload.motivo
     appointment.updated_at = datetime.utcnow()
     session.add(appointment)
     session.commit()
     session.refresh(appointment)
-    return appointment
+    return _to_cita_read(appointment)
 
 
-@router.patch("/{appointment_id}/reschedule", response_model=AppointmentRead)
+@router.patch("/{id_cita}/reprogramar", response_model=CitaRead)
 def reschedule_appointment(
-    appointment_id: int,
-    payload: AppointmentReschedule,
+    id_cita: int,
+    payload: CitaReprogramar,
     session: Session = Depends(get_session),
-) -> Appointment:
-    appointment = session.get(Appointment, appointment_id)
+) -> CitaRead:
+    appointment = session.get(Appointment, id_cita)
     if appointment is None:
-        raise HTTPException(status_code=404, detail="Appointment not found")
+        raise HTTPException(status_code=404, detail="Cita no encontrada")
 
     if appointment.status != "scheduled":
-        raise HTTPException(status_code=409, detail="Only scheduled appointments can be rescheduled")
+        raise HTTPException(status_code=409, detail="Solo las citas programadas pueden reprogramarse")
 
     ensure_provider_exists(session, appointment.provider_id)
-    validate_slot(session, appointment.provider_id, payload.new_slot_start, appointment_id=appointment.id)
+    validate_slot(
+        session,
+        appointment.provider_id,
+        payload.nueva_fecha_hora_cupo,
+        appointment_id=appointment.id,
+    )
 
-    appointment.slot_start = payload.new_slot_start
+    appointment.slot_start = payload.nueva_fecha_hora_cupo
     appointment.updated_at = datetime.utcnow()
     session.add(appointment)
     session.commit()
     session.refresh(appointment)
-    return appointment
+    return _to_cita_read(appointment)
