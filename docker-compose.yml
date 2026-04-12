@@ -16,6 +16,8 @@ services:
       - "4011:4011"
     volumes:
       - ./data/ips-csh:/data
+    networks:
+      - medix_net
 
   ips_hospital_nuevo_horizonte:
     build: .
@@ -34,6 +36,8 @@ services:
       - "4012:4012"
     volumes:
       - ./data/ips-hnh:/data
+    networks:
+      - medix_net
 
   ips_clinica_prado_caribe:
     build: .
@@ -52,3 +56,9 @@ services:
       - "4013:4013"
     volumes:
       - ./data/ips-cpc:/data
+    networks:
+      - medix_net
+
+networks:
+  medix_net:
+    name: medix_net
