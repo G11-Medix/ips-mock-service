@@ -29,6 +29,7 @@ class Paciente(SQLModel, table=True):
 class Specialty(SQLModel, table=True):
     id: int | None = Field(default=None, primary_key=True)
     name: str = Field(index=True, unique=True)
+    codigo_reps: str | None = Field(default=None, index=True, unique=True)
 
 
 class Provider(SQLModel, table=True):

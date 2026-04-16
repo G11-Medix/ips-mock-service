@@ -5,6 +5,19 @@ from sqlmodel import Session, select
 from app.config import get_settings
 from app.models.entities import Appointment, IPS, Paciente, Provider, Specialty
 
+SPECIALTY_REPS_CODES = {
+    "medicina general": "101",
+    "cardiologia": "302",
+    "dermatologia": "312",
+    "gastroenterologia": "315",
+    "ginecobstetricia": "318",
+    "neurologia": "329",
+    "oftalmologia": "330",
+    "ortopedia": "331",
+    "pediatria": "335",
+    "psicologia": "342",
+}
+
 
 def seed_initial_data(session: Session) -> None:
     settings = get_settings()
@@ -66,11 +79,29 @@ def _seed_especialidades(session: Session, specialties_seed: list[str]) -> dict[
     for specialty_name in specialties_seed:
         existing = session.exec(select(Specialty).where(Specialty.name == specialty_name)).first()
         if existing is None:
-            session.add(Specialty(name=specialty_name))
+            session.add(
+                Specialty(
+                    name=specialty_name,
+                    codigo_reps=SPECIALTY_REPS_CODES.get(_normalize_specialty_name(specialty_name)),
+                )
+            )
     session.commit()
 
     specialties = session.exec(select(Specialty)).all()
     return {item.name: item.id for item in specialties}
+
+
+def _normalize_specialty_name(value: str) -> str:
+    replacements = str.maketrans(
+        {
+            "á": "a",
+            "é": "e",
+            "í": "i",
+            "ó": "o",
+            "ú": "u",
+        }
+    )
+    return str(value or "").strip().lower().translate(replacements)
 
 
 def _seed_prestadores(session: Session, specialty_by_name: dict[str, int], providers_seed: list[dict]) -> None:

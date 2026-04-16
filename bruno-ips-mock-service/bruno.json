@@ -1,6 +1,6 @@
 {
   "version": "1",
-  "name": "bruno-ips-mock-service",
+  "name": "ips-mock-service-fhir",
   "type": "collection",
   "ignore": [
     "node_modules",
