@@ -32,12 +32,6 @@ from app.services.fhir import (
     specialty_code_from_resource,
     to_bundle,
 )
-from app.security.smart_auth import (
-    SmartAuthContext,
-    cache_request_json,
-    require_smart_access,
-    resolve_patient_id_from_appointment_request,
-)
 from app.services.slots import blocked_slots, build_daily_slots, is_slot_available
 
 router = APIRouter(prefix="/fhir", tags=["FHIR"])
@@ -170,7 +164,6 @@ def search_slots(
     schedule: str | None = None,
     start: str | None = None,
     status: str | None = None,
-    _auth: Annotated[SmartAuthContext, Depends(require_smart_access("Slot", "read"))] = None,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
     schedule_id = extract_reference_id(schedule, "Schedule")
@@ -210,14 +203,9 @@ def search_appointments(
     patient: str | None = None,
     date: str | None = None,
     status: str | None = None,
-    auth: Annotated[SmartAuthContext, Depends(require_smart_access("Appointment", "read"))] = None,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
     patient_id = extract_reference_id(patient, "Patient")
-    if patient_id is not None and auth.patient_id is not None and str(auth.patient_id) != str(patient_id):
-        raise HTTPException(status_code=403, detail=operation_outcome("forbidden", "El paciente del token no coincide con la búsqueda"))
-    if patient_id is None and auth.patient_id is not None:
-        patient_id = auth.patient_id
     db_status = appointment_status_from_fhir(status) if status else None
     rows = list_appointments(
         session,
@@ -247,14 +235,11 @@ def search_appointments(
 @router.get("/Appointment/{appointment_id}")
 def get_appointment(
     appointment_id: int,
-    auth: Annotated[SmartAuthContext, Depends(require_smart_access("Appointment", "read"))] = None,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
     appointment = session.get(Appointment, appointment_id)
     if appointment is None:
         raise HTTPException(status_code=404, detail=operation_outcome("not-found", "Appointment no encontrada"))
-    if auth.patient_id is not None and str(auth.patient_id) != str(appointment.patient_id):
-        raise HTTPException(status_code=403, detail=operation_outcome("forbidden", "El paciente del token no coincide con la cita"))
     provider = ensure_provider_exists(session, appointment.provider_id)
     specialty = session.get(Specialty, appointment.specialty_id)
     if specialty is None:
@@ -265,20 +250,9 @@ def get_appointment(
 @router.post("/Appointment", status_code=status.HTTP_201_CREATED)
 async def create_appointment(
     request: Request,
-    _cache: None = Depends(cache_request_json),
-    _auth: Annotated[
-        SmartAuthContext,
-        Depends(
-            require_smart_access(
-                "Appointment",
-                "write",
-                patient_resolver=resolve_patient_id_from_appointment_request,
-            )
-        ),
-    ] = None,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
-    payload = request.state._smart_cached_json
+    payload = await request.json()
     patient_id = find_participant_reference(payload, "Patient")
     practitioner_id = find_participant_reference(payload, "Practitioner")
     slot_references = payload.get("slot") or []
@@ -325,17 +299,13 @@ async def create_appointment(
 async def update_appointment(
     appointment_id: int,
     request: Request,
-    _cache: None = Depends(cache_request_json),
-    auth: Annotated[SmartAuthContext, Depends(require_smart_access("Appointment", "write"))] = None,
     session: Session = Depends(get_session),
 ) -> JSONResponse:
     appointment = session.get(Appointment, appointment_id)
     if appointment is None:
         raise HTTPException(status_code=404, detail=operation_outcome("not-found", "Appointment no encontrada"))
-    if auth.patient_id is not None and str(auth.patient_id) != str(appointment.patient_id):
-        raise HTTPException(status_code=403, detail=operation_outcome("forbidden", "El paciente del token no coincide con la cita"))
 
-    payload = request.state._smart_cached_json
+    payload = await request.json()
     requested_status = str(payload.get("status") or "").lower()
     if requested_status == "cancelled":
         if appointment.status == "cancelled":

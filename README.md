@@ -46,6 +46,11 @@ Por defecto el servicio reinicia y reseed la base al iniciar (`RESET_DB_ON_START
 - La agenda de un prestador se consulta con `GET /fhir/Slot?schedule=Schedule/{id_prestador}&start=YYYY-MM-DD`.
 - La gestion de citas se hace con `Appointment` en `GET /fhir/Appointment`, `POST /fhir/Appointment` y `PATCH /fhir/Appointment/{id}`.
 
+## Alcance de seguridad del mock
+- En esta fase el mock valida contratos HL7 FHIR R4, pero no modela autenticación SMART on FHIR.
+- `Slot` y `Appointment` se consumen sin `Authorization: Bearer`.
+- Si más adelante se necesita una simulación más realista, la capa SMART se puede agregar encima sin cambiar los recursos FHIR actuales.
+
 ## Especialidades con codigo REPS
 - El mock publica `codigo_reps` en los `CodeableConcept` de especialidad para `PractitionerRole`, `Schedule` y `Appointment`.
 - Hoy estan mapeadas estas especialidades: Medicina General `101`, Cardiologia `302`, Dermatologia `312`, Gastroenterologia `315`, Ginecobstetricia `318`, Neurologia `329`, Oftalmologia `330`, Ortopedia `331`, Pediatria `335` y Psicologia `342`.

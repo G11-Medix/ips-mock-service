@@ -55,4 +55,4 @@ def test_organization_patient_provider_and_slot_contracts_are_fhir(client: TestC
         headers=FHIR_HEADERS,
     )
 
-    assert slots.status_code == 401
+    assert slots.status_code == 200

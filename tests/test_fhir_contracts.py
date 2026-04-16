@@ -1,8 +1,6 @@
-import jwt
 import pytest
 from fastapi.testclient import TestClient
 
-from app.config import get_settings
 from app.main import app
 
 
@@ -16,26 +14,6 @@ FHIR_HEADERS = {
 def client() -> TestClient:
     with TestClient(app) as test_client:
         yield test_client
-
-
-def _smart_headers(
-    *,
-    patient_id: int | str = 1,
-    scope: str = "patient/Slot.read patient/Appointment.read patient/Appointment.write",
-) -> dict[str, str]:
-    settings = get_settings()
-    token = jwt.encode(
-        {
-            "sub": "smart-user-1",
-            "aud": settings.smart_audience,
-            "iss": settings.smart_issuer or f"{settings.supabase_url.rstrip('/')}/auth/v1",
-            "patient_id": str(patient_id),
-            "scope": scope,
-        },
-        settings.supabase_jwt_secret,
-        algorithm="HS256",
-    )
-    return {**FHIR_HEADERS, "Authorization": f"Bearer {token}"}
 
 
 def _first_available_slot(client: TestClient, provider_id: int, target_date: str, headers: dict[str, str]) -> str:
@@ -92,22 +70,14 @@ def test_metadata_and_patient_search_are_fhir() -> None:
         assert body["entry"][0]["resource"]["resourceType"] == "Patient"
 
 
-def test_slot_and_appointment_require_smart_token_and_scopes(client: TestClient) -> None:
-    no_auth = client.get(
+def test_slot_and_appointment_contracts_are_fhir_without_smart_auth(client: TestClient) -> None:
+    slots = client.get(
         "/fhir/Slot",
         headers=FHIR_HEADERS,
         params={"schedule": "Schedule/1", "start": "2026-04-01"},
     )
-    assert no_auth.status_code == 401
-    assert no_auth.json()["resourceType"] == "OperationOutcome"
-
-    wrong_scope = client.get(
-        "/fhir/Slot",
-        headers=_smart_headers(scope="patient/Appointment.read"),
-        params={"schedule": "Schedule/1", "start": "2026-04-01"},
-    )
-    assert wrong_scope.status_code == 403
-    assert wrong_scope.json()["issue"][0]["code"] == "forbidden"
+    assert slots.status_code == 200
+    assert slots.json()["resourceType"] == "Bundle"
 
 
 def test_appointment_create_cancel_and_reschedule_update_slot_state(client: TestClient) -> None:
@@ -115,8 +85,7 @@ def test_appointment_create_cancel_and_reschedule_update_slot_state(client: Test
     role = _provider_role_by_specialty(client, "335")
     provider_id = int(role["practitioner"]["reference"].split("/", 1)[1])
 
-    auth_headers = _smart_headers(patient_id=patient["id"])
-    first_start = _first_available_slot(client, provider_id, "2026-04-01", auth_headers)
+    first_start = _first_available_slot(client, provider_id, "2026-04-01", FHIR_HEADERS)
     create_payload = {
         "resourceType": "Appointment",
         "status": "booked",
@@ -139,7 +108,7 @@ def test_appointment_create_cancel_and_reschedule_update_slot_state(client: Test
         ],
     }
 
-    created = client.post("/fhir/Appointment", headers=auth_headers, json=create_payload)
+    created = client.post("/fhir/Appointment", headers=FHIR_HEADERS, json=create_payload)
     assert created.status_code == 201
     created_body = created.json()
     assert created_body["resourceType"] == "Appointment"
@@ -148,7 +117,7 @@ def test_appointment_create_cancel_and_reschedule_update_slot_state(client: Test
 
     busy_slots = client.get(
         "/fhir/Slot",
-        headers=auth_headers,
+        headers=FHIR_HEADERS,
         params={"schedule": f"Schedule/{provider_id}", "start": "2026-04-01", "status": "busy"},
     ).json()
     assert any(entry["resource"]["start"] == first_start for entry in busy_slots["entry"])
@@ -157,7 +126,7 @@ def test_appointment_create_cancel_and_reschedule_update_slot_state(client: Test
         entry["resource"]["start"]
         for entry in client.get(
             "/fhir/Slot",
-            headers=auth_headers,
+            headers=FHIR_HEADERS,
             params={"schedule": f"Schedule/{provider_id}", "start": "2026-04-01"},
         ).json()["entry"]
         if entry["resource"]["status"] == "free" and entry["resource"]["start"] != first_start
@@ -165,7 +134,7 @@ def test_appointment_create_cancel_and_reschedule_update_slot_state(client: Test
 
     rescheduled = client.patch(
         f"/fhir/Appointment/{created_body['id']}",
-        headers=auth_headers,
+        headers=FHIR_HEADERS,
         json={"slot": [{"reference": f"Slot/{provider_id}-{second_start}"}]},
     )
     assert rescheduled.status_code == 200
@@ -173,7 +142,7 @@ def test_appointment_create_cancel_and_reschedule_update_slot_state(client: Test
 
     busy_after_reschedule = client.get(
         "/fhir/Slot",
-        headers=auth_headers,
+        headers=FHIR_HEADERS,
         params={"schedule": f"Schedule/{provider_id}", "start": "2026-04-01"},
     ).json()["entry"]
     old_slot = next(entry["resource"] for entry in busy_after_reschedule if entry["resource"]["start"] == first_start)
@@ -183,7 +152,7 @@ def test_appointment_create_cancel_and_reschedule_update_slot_state(client: Test
 
     cancelled = client.patch(
         f"/fhir/Appointment/{created_body['id']}",
-        headers=auth_headers,
+        headers=FHIR_HEADERS,
         json={"status": "cancelled", "cancelationReason": {"text": "No puedo asistir"}},
     )
     assert cancelled.status_code == 200
@@ -191,22 +160,22 @@ def test_appointment_create_cancel_and_reschedule_update_slot_state(client: Test
 
     final_slots = client.get(
         "/fhir/Slot",
-        headers=auth_headers,
+        headers=FHIR_HEADERS,
         params={"schedule": f"Schedule/{provider_id}", "start": "2026-04-01"},
     ).json()["entry"]
     released_slot = next(entry["resource"] for entry in final_slots if entry["resource"]["start"] == second_start)
     assert released_slot["status"] == "free"
 
 
-def test_appointment_forbidden_when_patient_claim_does_not_match(client: TestClient) -> None:
+def test_appointment_can_be_created_without_smart_patient_claims(client: TestClient) -> None:
     patient = _first_patient(client)
     role = _provider_role_by_specialty(client, "335")
     provider_id = int(role["practitioner"]["reference"].split("/", 1)[1])
-    first_start = _first_available_slot(client, provider_id, "2026-04-01", _smart_headers())
+    first_start = _first_available_slot(client, provider_id, "2026-04-01", FHIR_HEADERS)
 
     response = client.post(
         "/fhir/Appointment",
-        headers=_smart_headers(patient_id=int(patient["id"]) + 999),
+        headers=FHIR_HEADERS,
         json={
             "resourceType": "Appointment",
             "status": "booked",
@@ -219,9 +188,8 @@ def test_appointment_forbidden_when_patient_claim_does_not_match(client: TestCli
         },
     )
 
-    assert response.status_code == 403
-    assert response.json()["resourceType"] == "OperationOutcome"
-    assert response.json()["issue"][0]["code"] == "forbidden"
+    assert response.status_code == 201
+    assert response.json()["resourceType"] == "Appointment"
 
 
 def test_fhir_errors_return_operation_outcome(client: TestClient) -> None:
