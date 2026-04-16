@@ -1,0 +1,15 @@
+meta {
+  name: Get Organizations
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{FHIR_URL}}/Organization
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+}

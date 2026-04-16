@@ -1,0 +1,15 @@
+meta {
+  name: Get Practitioner by ID
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{FHIR_URL}}/Practitioner/{{PRACTITIONER_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+}

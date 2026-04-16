@@ -1,0 +1,15 @@
+meta {
+  name: Get Schedule by Actor
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{FHIR_URL}}/Schedule?actor=Practitioner/{{PRACTITIONER_ID}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+}

@@ -1,0 +1,11 @@
+meta {
+  name: Get SMART Configuration
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{BASE_URL}}/.well-known/smart-configuration
+  body: none
+  auth: none
+}

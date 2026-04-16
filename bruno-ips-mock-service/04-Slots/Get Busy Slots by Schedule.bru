@@ -1,0 +1,16 @@
+meta {
+  name: Get Busy Slots by Schedule
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{FHIR_URL}}/Slot?schedule=Schedule/{{SCHEDULE_ID}}&start=2026-04-01&status=busy
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+  Authorization: Bearer {{SMART_TOKEN}}
+}

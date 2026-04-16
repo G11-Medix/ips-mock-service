@@ -1,34 +1,41 @@
-headers {
-  x-api-key: ips-csh-key
-  ~x-api-key: ips-hnh-key
-  ~x-api-key: ips-cpc-key
-}
-
 auth {
   mode: none
 }
 
 vars:pre-request {
-  API_URL: http://localhost:4011/api/v1
-  TIPO_DOCUMENTO: CC
-  NUMERO_DOCUMENTO: 1100101101
-  ID_ESPECIALIDAD: 1
-  ID_PRESTADOR: 1
-  FECHA_CUPOS: 2026-04-01
-  FECHA_HORA_CITA: 2026-04-01T08:00:00
-  FECHA_HORA_REPROGRAMACION: 2026-04-01T09:00:00
-  ID_PACIENTE: 1
-  ID_CITA: 1
+  BASE_URL: http://localhost:4011
+  FHIR_URL: {{BASE_URL}}/fhir
+  SMART_TOKEN: replace-me-with-bearer-token
+  ORGANIZATION_NIT: 900000000-0
+  PATIENT_IDENTIFIER_SYSTEM: urn:medix:document:cc
+  PATIENT_IDENTIFIER_VALUE: 1099001001
+  SPECIALTY_CODE: 335
+  PRACTITIONER_ID: 2
+  SCHEDULE_ID: 2
+  SLOT_START: 2026-04-01T08:00:00
+  APPOINTMENT_ID: 1
 }
 
 docs {
-  ### Puertos por instancia IPS
-  - **Clinica Santa Helena**: 4011
-  - **Hospital Nuevo Horizonte**: 4012
-  - **Clinica del Prado Caribe**: 4013
+  ### Mock FHIR-only
+  Esta coleccion prueba exclusivamente endpoints HL7 FHIR R4 bajo `/fhir`.
 
-  ### Suggested API_URL values
-  - `http://localhost:4011/api/v1`
-  - `http://localhost:4012/api/v1`
-  - `http://localhost:4013/api/v1`
+  ### URLs sugeridas
+  - `http://localhost:4011`
+  - `http://localhost:4012`
+  - `http://localhost:4013`
+  - `http://localhost:4014`
+  - `http://localhost:4015`
+
+  ### Autenticacion
+  - `Organization`, `Patient`, `PractitionerRole`, `Practitioner`, `Schedule` y `metadata` no requieren bearer token.
+  - `Slot` y `Appointment` si requieren `Authorization: Bearer {{SMART_TOKEN}}`.
+
+  ### Flujo recomendado
+  1. Consultar `SMART Configuration` y `CapabilityStatement`
+  2. Buscar `Organization`
+  3. Buscar `Patient`
+  4. Buscar `PractitionerRole?specialty={codigo_reps}`
+  5. Consultar `Slot` con `schedule=Schedule/{id_prestador}`
+  6. Crear, consultar, reprogramar o cancelar `Appointment`
 }
