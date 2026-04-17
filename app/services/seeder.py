@@ -229,6 +229,15 @@ def _dataset_for_ips(ips_code: str) -> dict:
             "pacientes": [
                 {
                     "tipo_documento": "CC",
+                    "numero_documento": "1000036438",
+                    "nombres": "Jairo",
+                    "apellidos": "Sierra",
+                    "fecha_nacimiento": date(2026, 4, 2),
+                    "telefono": "+573115823500",
+                    "correo": "jairoandressierra55@gmail.com",
+                },
+                {
+                    "tipo_documento": "CC",
                     "numero_documento": "1014977178",
                     "nombres": "Adrian",
                     "apellidos": "Ruiz",
@@ -291,6 +300,15 @@ def _dataset_for_ips(ips_code: str) -> dict:
         },
         "IPS-CLY": {
             "pacientes": [
+                {
+                    "tipo_documento": "CC",
+                    "numero_documento": "1000036438",
+                    "nombres": "Jairo",
+                    "apellidos": "Sierra",
+                    "fecha_nacimiento": date(2026, 4, 2),
+                    "telefono": "+573115823500",
+                    "correo": "jairoandressierra55@gmail.com",
+                },
                 {
                     "tipo_documento": "CE",
                     "numero_documento": "485101",
@@ -392,6 +410,15 @@ def _dataset_for_ips(ips_code: str) -> dict:
         },
         "IPS-HSI": {
             "pacientes": [
+                {
+                    "tipo_documento": "CC",
+                    "numero_documento": "1000036438",
+                    "nombres": "Jairo",
+                    "apellidos": "Sierra",
+                    "fecha_nacimiento": date(2026, 4, 2),
+                    "telefono": "+573115823500",
+                    "correo": "jairoandressierra55@gmail.com",
+                },
                 {
                     "tipo_documento": "CC",
                     "numero_documento": "1014977178",
