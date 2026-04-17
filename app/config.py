@@ -16,9 +16,16 @@ class Settings(BaseSettings):
     ips_nit: str = Field(default="900000000-0", alias="IPS_NIT")
     timezone: str = Field(default="America/Bogota", alias="TIMEZONE")
     port: int = Field(default=4011, alias="PORT")
-    api_key: str = Field(default="dev-api-key", alias="API_KEY")
     db_path: str = Field(default="./data/ips.db", alias="DB_PATH")
     reset_db_on_startup: bool = Field(default=True, alias="RESET_DB_ON_STARTUP")
+    supabase_url: str = Field(default="http://localhost:54321", alias="SUPABASE_URL")
+    supabase_jwt_secret: str | None = Field(
+        default="dev-smart-secret-32-bytes-minimum!!",
+        alias="SUPABASE_JWT_SECRET",
+    )
+    smart_audience: str | None = Field(default="authenticated", alias="SMART_AUDIENCE")
+    smart_issuer: str | None = Field(default=None, alias="SMART_ISSUER")
+    smart_patient_claim: str = Field(default="patient_id", alias="SMART_PATIENT_CLAIM")
 
 
 @lru_cache

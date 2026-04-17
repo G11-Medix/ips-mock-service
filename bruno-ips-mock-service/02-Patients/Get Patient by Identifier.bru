@@ -1,0 +1,15 @@
+meta {
+  name: Get Patient by Identifier
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{FHIR_URL}}/Patient?identifier={{PATIENT_IDENTIFIER_SYSTEM}}|{{PATIENT_IDENTIFIER_VALUE}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+}

@@ -1,61 +1,126 @@
 services:
-  ips_clinica_santa_helena:
+  ips_santa_fe:
     build: .
-    container_name: ips_clinica_santa_helena_mock
+    container_name: ips_santa_fe_mock
     environment:
-      IPS_NAME: "Clinica Santa Helena"
-      IPS_SLUG: "clinica-santa-helena"
-      IPS_CODE: "IPS-CSH"
-      IPS_NIT: "901110100-1"
+      IPS_NAME: "Fundación Santa Fe de Bogotá"
+      IPS_SLUG: "fundacion-santa-fe"
+      IPS_CODE: "IPS-FSF"
+      IPS_NIT: "860032640-1"
       TIMEZONE: "America/Bogota"
       PORT: 4011
-      API_KEY: "ips-csh-key"
+      API_KEY: "ips-fsf-key"
       DB_PATH: "/data/ips.db"
       RESET_DB_ON_STARTUP: "true"
+      SUPABASE_URL: "http://host.docker.internal:54321"
+      SUPABASE_JWT_SECRET: "dev-smart-secret-32-bytes-minimum!!"
+      SMART_AUDIENCE: "authenticated"
+      SMART_ISSUER: "http://host.docker.internal:54321/auth/v1"
+      SMART_PATIENT_CLAIM: "patient_id"
     ports:
       - "4011:4011"
     volumes:
-      - ./data/ips-csh:/data
+      - ./data/ips-fsf:/data
     networks:
       - medix_net
 
-  ips_hospital_nuevo_horizonte:
+  ips_country:
     build: .
-    container_name: ips_hospital_nuevo_horizonte_mock
+    container_name: ips_country_mock
     environment:
-      IPS_NAME: "Hospital Nuevo Horizonte"
-      IPS_SLUG: "hospital-nuevo-horizonte"
-      IPS_CODE: "IPS-HNH"
-      IPS_NIT: "901220200-1"
+      IPS_NAME: "Clínica Country"
+      IPS_SLUG: "clinica-country"
+      IPS_CODE: "IPS-CLY"
+      IPS_NIT: "860010958-3"
       TIMEZONE: "America/Bogota"
       PORT: 4012
-      API_KEY: "ips-hnh-key"
+      API_KEY: "ips-cly-key"
       DB_PATH: "/data/ips.db"
       RESET_DB_ON_STARTUP: "true"
+      SUPABASE_URL: "http://host.docker.internal:54321"
+      SUPABASE_JWT_SECRET: "dev-smart-secret-32-bytes-minimum!!"
+      SMART_AUDIENCE: "authenticated"
+      SMART_ISSUER: "http://host.docker.internal:54321/auth/v1"
+      SMART_PATIENT_CLAIM: "patient_id"
     ports:
       - "4012:4012"
     volumes:
-      - ./data/ips-hnh:/data
+      - ./data/ips-cly:/data
     networks:
       - medix_net
 
-  ips_clinica_prado_caribe:
+  ips_clinica_colombia:
     build: .
-    container_name: ips_clinica_prado_caribe_mock
+    container_name: ips_clinica_colombia_mock
     environment:
-      IPS_NAME: "Clinica del Prado Caribe"
-      IPS_SLUG: "clinica-prado-caribe"
-      IPS_CODE: "IPS-CPC"
-      IPS_NIT: "901330300-1"
+      IPS_NAME: "Clínica Universitaria Colombia"
+      IPS_SLUG: "clinica-universitaria-colombia"
+      IPS_CODE: "IPS-CUC"
+      IPS_NIT: "900073809-1"
       TIMEZONE: "America/Bogota"
       PORT: 4013
-      API_KEY: "ips-cpc-key"
+      API_KEY: "ips-cuc-key"
       DB_PATH: "/data/ips.db"
       RESET_DB_ON_STARTUP: "true"
+      SUPABASE_URL: "http://host.docker.internal:54321"
+      SUPABASE_JWT_SECRET: "dev-smart-secret-32-bytes-minimum!!"
+      SMART_AUDIENCE: "authenticated"
+      SMART_ISSUER: "http://host.docker.internal:54321/auth/v1"
+      SMART_PATIENT_CLAIM: "patient_id"
     ports:
       - "4013:4013"
     volumes:
-      - ./data/ips-cpc:/data
+      - ./data/ips-cuc:/data
+    networks:
+      - medix_net
+
+  ips_san_ignacio:
+    build: .
+    container_name: ips_san_ignacio_mock
+    environment:
+      IPS_NAME: "Hospital Universitario San Ignacio"
+      IPS_SLUG: "hospital-san-ignacio"
+      IPS_CODE: "IPS-HSI"
+      IPS_NIT: "860016693-2"
+      TIMEZONE: "America/Bogota"
+      PORT: 4014
+      API_KEY: "ips-hsi-key"
+      DB_PATH: "/data/ips.db"
+      RESET_DB_ON_STARTUP: "true"
+      SUPABASE_URL: "http://host.docker.internal:54321"
+      SUPABASE_JWT_SECRET: "dev-smart-secret-32-bytes-minimum!!"
+      SMART_AUDIENCE: "authenticated"
+      SMART_ISSUER: "http://host.docker.internal:54321/auth/v1"
+      SMART_PATIENT_CLAIM: "patient_id"
+    ports:
+      - "4014:4014"
+    volumes:
+      - ./data/ips-hsi:/data
+    networks:
+      - medix_net
+
+  ips_mederi:
+    build: .
+    container_name: ips_mederi_mock
+    environment:
+      IPS_NAME: "Hospital Universitario Mayor - Méderi"
+      IPS_SLUG: "hospital-mederi"
+      IPS_CODE: "IPS-MED"
+      IPS_NIT: "900203716-1"
+      TIMEZONE: "America/Bogota"
+      PORT: 4015
+      API_KEY: "ips-med-key"
+      DB_PATH: "/data/ips.db"
+      RESET_DB_ON_STARTUP: "true"
+      SUPABASE_URL: "http://host.docker.internal:54321"
+      SUPABASE_JWT_SECRET: "dev-smart-secret-32-bytes-minimum!!"
+      SMART_AUDIENCE: "authenticated"
+      SMART_ISSUER: "http://host.docker.internal:54321/auth/v1"
+      SMART_PATIENT_CLAIM: "patient_id"
+    ports:
+      - "4015:4015"
+    volumes:
+      - ./data/ips-med:/data
     networks:
       - medix_net
 

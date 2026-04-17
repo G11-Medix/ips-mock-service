@@ -1,0 +1,53 @@
+meta {
+  name: Post Create Appointment
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{FHIR_URL}}/Appointment
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+  Content-Type: application/fhir+json
+  Authorization: Bearer {{SMART_TOKEN}}
+}
+
+body:json {
+  {
+    "resourceType": "Appointment",
+    "status": "booked",
+    "specialty": [
+      {
+        "coding": [
+          {
+            "system": "urn:medix:specialty",
+            "code": "{{SPECIALTY_CODE}}"
+          }
+        ]
+      }
+    ],
+    "slot": [
+      {
+        "reference": "Slot/{{PRACTITIONER_ID}}-{{SLOT_START}}"
+      }
+    ],
+    "participant": [
+      {
+        "actor": {
+          "reference": "Patient/1"
+        },
+        "status": "accepted"
+      },
+      {
+        "actor": {
+          "reference": "Practitioner/{{PRACTITIONER_ID}}"
+        },
+        "status": "accepted"
+      }
+    ]
+  }
+}
