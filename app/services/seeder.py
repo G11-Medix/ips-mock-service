@@ -302,6 +302,15 @@ def _dataset_for_ips(ips_code: str) -> dict:
             "pacientes": [
                 {
                     "tipo_documento": "CC",
+                    "numero_documento": "1000590924",
+                    "nombres": "Diego Alejandro",
+                    "apellidos": "Jara Rojas",
+                    "fecha_nacimiento": date(2026, 4, 1),
+                    "telefono": "+573209666909",
+                    "correo": "diegoalejandrojararojas@gmail.com",
+                },
+                {
+                    "tipo_documento": "CC",
                     "numero_documento": "1000036438",
                     "nombres": "Jairo",
                     "apellidos": "Sierra",
@@ -412,6 +421,15 @@ def _dataset_for_ips(ips_code: str) -> dict:
             "pacientes": [
                 {
                     "tipo_documento": "CC",
+                    "numero_documento": "1000590924",
+                    "nombres": "Diego Alejandro",
+                    "apellidos": "Jara Rojas",
+                    "fecha_nacimiento": date(2026, 4, 1),
+                    "telefono": "+573209666909",
+                    "correo": "diegoalejandrojararojas@gmail.com",
+                },
+                {
+                    "tipo_documento": "CC",
                     "numero_documento": "1000036438",
                     "nombres": "Jairo",
                     "apellidos": "Sierra",
@@ -484,6 +502,15 @@ def _dataset_for_ips(ips_code: str) -> dict:
         },
         "IPS-MED": {
             "pacientes": [
+                {
+                    "tipo_documento": "CC",
+                    "numero_documento": "1000590924",
+                    "nombres": "Diego Alejandro",
+                    "apellidos": "Jara Rojas",
+                    "fecha_nacimiento": date(2026, 4, 1),
+                    "telefono": "+573209666909",
+                    "correo": "diegoalejandrojararojas@gmail.com",
+                },
                 {
                     "tipo_documento": "CC",
                     "numero_documento": "1014977178",
