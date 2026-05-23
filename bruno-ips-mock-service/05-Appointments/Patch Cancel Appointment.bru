@@ -1,0 +1,26 @@
+meta {
+  name: Patch Cancel Appointment
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{FHIR_URL}}/Appointment/{{APPOINTMENT_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+  Content-Type: application/fhir+json
+  Authorization: Bearer {{SMART_TOKEN}}
+}
+
+body:json {
+  {
+    "status": "cancelled",
+    "cancelationReason": {
+      "text": "No puedo asistir"
+    }
+  }
+}

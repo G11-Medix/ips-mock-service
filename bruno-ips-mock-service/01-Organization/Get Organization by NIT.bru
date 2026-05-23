@@ -1,0 +1,15 @@
+meta {
+  name: Get Organization by NIT
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{FHIR_URL}}/Organization?identifier=urn:medix:nit|{{ORGANIZATION_NIT}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+}

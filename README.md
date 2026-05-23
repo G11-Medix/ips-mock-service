@@ -1,6 +1,6 @@
-# Mock EPS/IPS para integraciones
+# Mock IPS para integraciones de agenda
 
-Servicio mock parametrizable por instancia EPS para exponer datos maestros (EPS, IPS, pacientes) y validar afiliaciones, manteniendo el flujo de citas.
+Servicio mock parametrizable por instancia IPS para simular integraciones con sistemas de agendamiento de citas medicas usando HL7 FHIR R4.
 
 ## Stack
 - Python 3.11
@@ -8,96 +8,49 @@ Servicio mock parametrizable por instancia EPS para exponer datos maestros (EPS,
 - SQLModel + SQLite
 - Docker + Docker Compose
 
-## Variables de entorno
-Ver `.env.example`.
-
-- `EPS_NAME`
-- `EPS_SLUG`
-- `EPS_CODE`
-- `TIMEZONE`
-- `PORT`
-- `API_KEY`
-- `DB_PATH`
-
-## Ejecutar local
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env
-uvicorn app.main:app --reload --port 4011
-```
-
-Swagger:
-- `http://localhost:4011/docs`
-
-## Ejecutar con Docker Compose (3 EPS)
+## Ejecutar con Docker Compose (5 IPS)
 ```bash
 docker compose up --build
 ```
 
 Instancias:
-- `eps_sanitas`: `http://localhost:4011`
-- `eps_nuevaeps`: `http://localhost:4012`
-- `eps_saludtotal`: `http://localhost:4013`
+- `ips_santa_fe`: `http://localhost:4011`
+- `ips_country`: `http://localhost:4012`
+- `ips_clinica_colombia`: `http://localhost:4013`
+- `ips_san_ignacio`: `http://localhost:4014`
+- `ips_mederi`: `http://localhost:4015`
 
 Cada instancia usa su propia base SQLite en:
-- `./data/sanitas/eps.db`
-- `./data/nuevaeps/eps.db`
-- `./data/saludtotal/eps.db`
-
-## Endpoints
-Base API: `/api/v1`
-
-### Datos maestros
-- `GET /api/v1/eps`
-- `GET /api/v1/ips`
-- `GET /api/v1/ips?nit={nit}`
-- `GET /api/v1/ips?codigo_eps={codigo}`
-- `GET /api/v1/ips/{nit}`
-- `GET /api/v1/pacientes`
-- `GET /api/v1/pacientes?tipo_documento=&numero_documento=&codigo_eps=`
-- `GET /api/v1/pacientes/{tipo_documento}/{numero_documento}`
-
-### Validacion de afiliacion
-- `GET /api/v1/afiliaciones/validar?tipo_documento=&numero_documento=&codigo_eps=`
-
-### Citas (se mantiene)
-- `GET /api/v1/specialties`
-- `GET /api/v1/providers`
-- `GET /api/v1/providers/{id}/slots?date=YYYY-MM-DD`
-- `POST /api/v1/appointments`
-- `GET /api/v1/appointments/{id}`
-- `GET /api/v1/appointments?patient_id=&from=&to=`
-- `PATCH /api/v1/appointments/{id}/cancel`
-- `PATCH /api/v1/appointments/{id}/reschedule`
+- `./data/ips-fsf/ips.db`
+- `./data/ips-cly/ips.db`
+- `./data/ips-cuc/ips.db`
+- `./data/ips-hsi/ips.db`
+- `./data/ips-med/ips.db`
 
 ## Seeder inicial
 El seeder crea datos deterministas por instancia:
-- EPS base (incluyendo la EPS principal de la instancia por `EPS_CODE`)
-- IPS con NIT fijo
-- Vinculos IPS-EPS (`InstitucionEPS`)
-- Pacientes afiliados y no afiliados
-- Especialidades y providers para agenda
+- IPS principal de la instancia (`IPS_NAME`, `IPS_CODE`, `IPS_NIT`)
+- Pacientes propios por IPS
+- Especialidades y prestadores por IPS
+- Una cita demo inicial para pruebas del flujo
 
-## Ejemplos curl
-Listado EPS:
-```bash
-curl -s http://localhost:4011/api/v1/eps -H 'x-api-key: sanitas-key'
-```
 
-Listado IPS afiliadas a una EPS:
-```bash
-curl -s 'http://localhost:4011/api/v1/ips?codigo_eps=EPS-SAN' -H 'x-api-key: sanitas-key'
-```
+## Nota de datos
+Por defecto el servicio reinicia y reseed la base al iniciar (`RESET_DB_ON_STARTUP=true`), ideal para pruebas repetibles.
 
-Consultar paciente por documento:
-```bash
-curl -s 'http://localhost:4011/api/v1/pacientes/CC/1002003001' -H 'x-api-key: sanitas-key'
-```
+## Contrato FHIR
+- El mock expone solo endpoints FHIR bajo `/fhir`.
+- La IPS se consulta con `GET /fhir/Organization`.
+- Los pacientes se consultan con `GET /fhir/Patient`.
+- Los prestadores por especialidad se consultan con `GET /fhir/PractitionerRole?specialty={codigo_reps}`.
+- La agenda de un prestador se consulta con `GET /fhir/Slot?schedule=Schedule/{id_prestador}&start=YYYY-MM-DD`.
+- La gestion de citas se hace con `Appointment` en `GET /fhir/Appointment`, `POST /fhir/Appointment` y `PATCH /fhir/Appointment/{id}`.
 
-Validar afiliacion:
-```bash
-curl -s 'http://localhost:4011/api/v1/afiliaciones/validar?tipo_documento=CC&numero_documento=1002003001&codigo_eps=EPS-SAN' \
-  -H 'x-api-key: sanitas-key'
-```
+## Alcance de seguridad del mock
+- En esta fase el mock valida contratos HL7 FHIR R4, pero no modela autenticación SMART on FHIR.
+- `Slot` y `Appointment` se consumen sin `Authorization: Bearer`.
+- Si más adelante se necesita una simulación más realista, la capa SMART se puede agregar encima sin cambiar los recursos FHIR actuales.
+
+## Especialidades con codigo REPS
+- El mock publica `codigo_reps` en los `CodeableConcept` de especialidad para `PractitionerRole`, `Schedule` y `Appointment`.
+- Hoy estan mapeadas estas especialidades: Medicina General `101`, Cardiologia `302`, Dermatologia `312`, Gastroenterologia `315`, Ginecobstetricia `318`, Neurologia `329`, Oftalmologia `330`, Ortopedia `331`, Pediatria `335` y Psicologia `342`.

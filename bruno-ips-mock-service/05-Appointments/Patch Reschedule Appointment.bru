@@ -1,0 +1,27 @@
+meta {
+  name: Patch Reschedule Appointment
+  type: http
+  seq: 4
+}
+
+patch {
+  url: {{FHIR_URL}}/Appointment/{{APPOINTMENT_ID}}
+  body: json
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+  Content-Type: application/fhir+json
+  Authorization: Bearer {{SMART_TOKEN}}
+}
+
+body:json {
+  {
+    "slot": [
+      {
+        "reference": "Slot/{{PRACTITIONER_ID}}-2026-04-01T09:00:00"
+      }
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+meta {
+  name: Get PractitionerRole by Specialty
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{FHIR_URL}}/PractitionerRole?specialty={{SPECIALTY_CODE}}
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+}

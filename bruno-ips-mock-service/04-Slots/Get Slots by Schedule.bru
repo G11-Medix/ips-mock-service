@@ -1,0 +1,16 @@
+meta {
+  name: Get Slots by Schedule
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{FHIR_URL}}/Slot?schedule=Schedule/{{SCHEDULE_ID}}&start=2026-04-01
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+  Authorization: Bearer {{SMART_TOKEN}}
+}

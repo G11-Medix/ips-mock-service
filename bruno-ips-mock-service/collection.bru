@@ -1,0 +1,41 @@
+auth {
+  mode: none
+}
+
+vars:pre-request {
+  BASE_URL: http://localhost:4011
+  FHIR_URL: {{BASE_URL}}/fhir
+  SMART_TOKEN: replace-me-with-bearer-token
+  ORGANIZATION_NIT: 900000000-0
+  PATIENT_IDENTIFIER_SYSTEM: urn:medix:document:cc
+  PATIENT_IDENTIFIER_VALUE: 1099001001
+  SPECIALTY_CODE: 335
+  PRACTITIONER_ID: 2
+  SCHEDULE_ID: 2
+  SLOT_START: 2026-04-01T08:00:00
+  APPOINTMENT_ID: 1
+}
+
+docs {
+  ### Mock FHIR-only
+  Esta coleccion prueba exclusivamente endpoints HL7 FHIR R4 bajo `/fhir`.
+
+  ### URLs sugeridas
+  - `http://localhost:4011`
+  - `http://localhost:4012`
+  - `http://localhost:4013`
+  - `http://localhost:4014`
+  - `http://localhost:4015`
+
+  ### Autenticacion
+  - `Organization`, `Patient`, `PractitionerRole`, `Practitioner`, `Schedule` y `metadata` no requieren bearer token.
+  - `Slot` y `Appointment` si requieren `Authorization: Bearer {{SMART_TOKEN}}`.
+
+  ### Flujo recomendado
+  1. Consultar `SMART Configuration` y `CapabilityStatement`
+  2. Buscar `Organization`
+  3. Buscar `Patient`
+  4. Buscar `PractitionerRole?specialty={codigo_reps}`
+  5. Consultar `Slot` con `schedule=Schedule/{id_prestador}`
+  6. Crear, consultar, reprogramar o cancelar `Appointment`
+}

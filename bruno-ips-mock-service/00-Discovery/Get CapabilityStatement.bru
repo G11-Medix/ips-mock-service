@@ -1,0 +1,15 @@
+meta {
+  name: Get CapabilityStatement
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{FHIR_URL}}/metadata
+  body: none
+  auth: none
+}
+
+headers {
+  Accept: application/fhir+json
+}

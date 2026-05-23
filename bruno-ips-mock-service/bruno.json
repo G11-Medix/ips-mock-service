@@ -1,0 +1,9 @@
+{
+  "version": "1",
+  "name": "ips-mock-service-fhir",
+  "type": "collection",
+  "ignore": [
+    "node_modules",
+    ".git"
+  ]
+}
